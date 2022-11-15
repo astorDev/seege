@@ -1,2 +1,2 @@
 # seege
-Load testing tool based on NBomber
+Load testing tool
