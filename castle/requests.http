@@ -1,0 +1,28 @@
+@paulId = {{paul.response.body.$.id}}
+
+###
+{{castle}}/about
+
+###
+# @name paul
+POST {{castle}}/citizens
+
+{
+    "name" : "Paul"
+}
+
+###
+# @name craft
+PATCH {{castle}}/citizens/{{paulId}}/wood
+
+{
+    "craft" : 12
+}
+
+###
+# @name burn
+PATCH {{castle}}/citizens/{{paulId}}/wood
+
+{
+    "burn" : 5
+}

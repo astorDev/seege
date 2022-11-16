@@ -1,0 +1,53 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Castle", "Castle", "{9422485C-1262-4A59-B05B-C7CECDC6C7E3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Castle.WebApi", "Castle\webapi\Castle.WebApi.csproj", "{CC4C9892-8EA1-4426-ADC2-6242209E2676}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Castle.Protocol", "Castle\protocol\Castle.Protocol.csproj", "{694958A6-78BE-4D1B-BD8B-D7C828F744D2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Seege.Reflection", "reflection\Seege.Reflection.csproj", "{4639D52F-4AD3-4609-95C0-9BD18F98F46A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Seege", "core\Seege.csproj", "{14FA7F24-C2F5-4C72-ADAE-E105733A32BD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Castle.Seege", "castle\seege\Castle.Seege.csproj", "{5C3C2C2B-B47C-4EFE-A6D9-AD17A0FAAF16}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CC4C9892-8EA1-4426-ADC2-6242209E2676}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC4C9892-8EA1-4426-ADC2-6242209E2676}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC4C9892-8EA1-4426-ADC2-6242209E2676}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC4C9892-8EA1-4426-ADC2-6242209E2676}.Release|Any CPU.Build.0 = Release|Any CPU
+		{694958A6-78BE-4D1B-BD8B-D7C828F744D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{694958A6-78BE-4D1B-BD8B-D7C828F744D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{694958A6-78BE-4D1B-BD8B-D7C828F744D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{694958A6-78BE-4D1B-BD8B-D7C828F744D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4639D52F-4AD3-4609-95C0-9BD18F98F46A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4639D52F-4AD3-4609-95C0-9BD18F98F46A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4639D52F-4AD3-4609-95C0-9BD18F98F46A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4639D52F-4AD3-4609-95C0-9BD18F98F46A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14FA7F24-C2F5-4C72-ADAE-E105733A32BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14FA7F24-C2F5-4C72-ADAE-E105733A32BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14FA7F24-C2F5-4C72-ADAE-E105733A32BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14FA7F24-C2F5-4C72-ADAE-E105733A32BD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C3C2C2B-B47C-4EFE-A6D9-AD17A0FAAF16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C3C2C2B-B47C-4EFE-A6D9-AD17A0FAAF16}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C3C2C2B-B47C-4EFE-A6D9-AD17A0FAAF16}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C3C2C2B-B47C-4EFE-A6D9-AD17A0FAAF16}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{CC4C9892-8EA1-4426-ADC2-6242209E2676} = {9422485C-1262-4A59-B05B-C7CECDC6C7E3}
+		{694958A6-78BE-4D1B-BD8B-D7C828F744D2} = {9422485C-1262-4A59-B05B-C7CECDC6C7E3}
+		{5C3C2C2B-B47C-4EFE-A6D9-AD17A0FAAF16} = {9422485C-1262-4A59-B05B-C7CECDC6C7E3}
+	EndGlobalSection
+EndGlobal

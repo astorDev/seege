@@ -1,0 +1,12 @@
+version: '3.9'
+
+services:
+  webapi:
+    image: castle_webapi
+    labels:
+      - family=nist
+    build:
+      context: .
+      dockerfile: Castle.WebApi/Dockerfile
+    ports:
+      - "5000:80"
