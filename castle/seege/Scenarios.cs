@@ -1,7 +1,3 @@
-using NBomber.Contracts;
-using NBomber.CSharp;
-using Seege;
-
 record Wooding(CreateCitizen CreateCitizen, Craft Craft, Burn Burn) : IScenarioBuilder {
     public Scenario Build() => BuildersScenarioBuilder
             .Build("wooding", this.CreateCitizen, this.Craft, this.Burn, this.Craft, this.Burn)

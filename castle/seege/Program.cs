@@ -1,9 +1,10 @@
-﻿using System.Text.RegularExpressions;
+﻿global using NBomber.CSharp;
+global using NBomber.Contracts;
+global using Seege;
+global using Seege.Reflection;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using NBomber.CSharp;
-using Seege;
-using Seege.Reflection;
 
 var services = new ServiceCollection();
 var configuration = new ConfigurationBuilder()
