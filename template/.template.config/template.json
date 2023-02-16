@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Astor",
+  "classifications": [ "LoadTests", "Console" ],
+  "name": "Seege",
+  "identity": "Seege",
+  "shortName": "seege",
+  "tags": {
+    "language": "C#",
+    "type":"project"
+  },
+  "sourceName": "Template",
+  "preferNameDirectory": true
+}

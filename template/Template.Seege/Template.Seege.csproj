@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="7.0.0" />
+      <PackageReference Include="Seege" Version="1.0.1" />
+      <PackageReference Include="Seege.Reflection" Version="1.0.1" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <Using Include="NBomber.CSharp" />
+        <Using Include="NBomber.Contracts" />
+        <Using Include="Seege" />
+        <Using Include="Seege.Reflection" />
+        <Using Include="System.Text.RegularExpressions" />
+        <Using Include="Microsoft.Extensions.Configuration" />
+        <Using Include="Microsoft.Extensions.DependencyInjection" />
+    </ItemGroup>
+
+</Project>
