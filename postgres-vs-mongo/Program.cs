@@ -1,4 +1,4 @@
-﻿using BenchmarkDotNet.Running;
+using BenchmarkDotNet.Running;
 
 MongoFactory.GetCollection().Database.DropCollection("expenses");
 new Db().Database.EnsureDeleted();
