@@ -1,10 +1,10 @@
 # Postgres VS Mongo: Performance Comparison for semi-structured data
 
-The goal of this article is to compare performance of MongoDb and PostgreSQL for data having partially dynamic structure. We'll write data access code using C# and perform tests using Benchmarks.NET.
+The goal of this article is to compare the performance of MongoDB and PostgreSQL for data having a partially dynamic structure. We'll write data access code using C# and perform tests using Benchmarks.NET.
 
 ## The Setup
 
-Both database will be deployed via simple docker compose file:
+Both databases will be deployed via a simple docker-compose file:
 
 ```yaml
 services:
@@ -44,7 +44,7 @@ JG.repeat(5000, {
 });
 ```
 
-Json Generator has a data size limit, but for our tests it's better to have a better table size. So for each insert iteration we'll create a copy of each record with modified id to avoid duplication like that:
+Json Generator has a data size limit, but for our tests it's better to have a better table size. So for each insert iteration, we'll create a copy of each record with a modified ID to avoid duplication like that:
 
 ```csharp
 public static class TestData
@@ -66,7 +66,7 @@ public static class TestData
 }
 ```
 
-We'll need to test querying capabilities using both `userId` and `category` fields. Let's add code to `TestData` that provide us random values for such queries:
+We'll need to test querying capabilities using both the `userId` and `category` fields. Let's add code to `TestData` that provides us random values for such queries:
 
 ```csharp
 static Random random = new(8899);
@@ -98,7 +98,7 @@ The test should start clean, so the first thing we are going to do in `Program.c
 MongoFactory.GetCollection().Database.DropCollection("expenses");
 ```
 
-PostgreSQL will need a little more setup. Although, EF Core is able to insert records with `Dictionary<string, string>` to the postgres as `hstore` it doesn't really provide any querying capabilities for those, therefore we'll need to use `jsonb` instead. Here's what it looks like:
+PostgreSQL will need a little more setup. Although, EF Core is able to insert records with `Dictionary<string, string>` to Postgres as `hstore` it doesn't really provide any querying capabilities for those, therefore we'll need to use `jsonb` instead. Here's what it looks like:
 
 ```csharp
 public class Db : DbContext {
@@ -122,7 +122,7 @@ public class ExpenseRecord {
 }
 ```
 
-and for the frest start in `Program.cs`:
+and for the fresh start in `Program.cs`:
 
 ```csharp
 new Db().Database.EnsureDeleted();
@@ -131,7 +131,7 @@ new Db().Database.EnsureCreated();
 
 ## Tests
 
-To correctly estimate write performance it's better to have indexes in place. So, our first test will show how long it takes to create an index on an empty database. Although, the test doesn't show much I still find it's interesting and we'll need to create an index anyway.
+To correctly estimate write performance it's better to have indexes in place. So, our first test will show how long it takes to create an index on an empty database. Although the test doesn't show much I still find it interesting and we'll need to create an index anyway.
 
 ```csharp
 [SimpleJob(RunStrategy.Monitoring, iterationCount: 1)]
@@ -156,7 +156,7 @@ public class CreateUserIdIndex
 | Mongo    | 152.9 ms |    NA |
 | Postgres | 402.0 ms |    NA |
 
-Now let's insert a million records (5000 record * 200 times) into our database and measure batch insert performance at the same time
+Now let's insert a million records (5000 records * 200 times) into our database and measure batch insert performance at the same time
 
 ```csharp
 [SimpleJob(RunStrategy.Monitoring, iterationCount: 200, id: "WriteBatches")]
@@ -185,7 +185,7 @@ public class WriteBatches
 | Mongo    |  53.50 ms |  8.449 ms | 35.77 ms |  42.32 ms |
 | Postgres | 219.15 ms | 15.864 ms | 67.17 ms | 203.79 ms |
 
-MongoDb significantly outperforms Postgres in the test. But my assumption is that in the real life in most cases records will be inserted one by one other then in batch. Let's see how out database engines will compare in this scenario
+MongoDB significantly outperforms Postgres in the test. But I assume that in real life in most cases records will be inserted one by one other than in batch. Let's see how our database engines will compare in this scenario
 
 ```csharp
 [SimpleJob(RunStrategy.Monitoring, iterationCount: 10, id: "WriteOneByOne")]
@@ -252,7 +252,7 @@ public class ReadByUserId
 | Mongo    | 21.83 ms | 12.40 ms | 36.57 ms | 17.37 ms |
 | Postgres | 66.63 ms | 25.53 ms | 75.29 ms | 54.84 ms |
 
-Before our next read test let's check how hard would it be to create an index, when we already have one million records:
+Before our next read test let's check how hard it would be to create an index when we already have one million records:
 
 ```csharp
 [SimpleJob(RunStrategy.Monitoring, iterationCount: 1)]
@@ -276,7 +276,7 @@ public class CreateCategoryIndex {
 | Mongo    | 1.563 s |    NA |
 | Postgres | 1.916 s |    NA |
 
-The results are not that different, hence not really interesting. Now let's get back to our final competition with slightly more complicated query and then summarize the results.
+The results are not that different, hence not really interesting. Now let's get back to our final competition with a slightly more complicated query and then summarize the results.
 
 ```csharp
 [SimpleJob(RunStrategy.Monitoring, iterationCount: 100, id: "SumByCategory")]
@@ -308,7 +308,7 @@ public class SumByCategory
 | Mongo    | 174.51 ms | 12.05 ms | 35.53 ms |
 | Postgres |  60.43 ms | 22.42 ms | 66.11 ms |
 
-This is the test where Postgres finally took a lead. Not sure if it's result of a better query composition for Postgres but anyway that's a 1 point for postgres.
+This is the test where Postgres finally took the lead. Not sure if it's the result of a better query composition for Postgres but anyway that's a 1 point for Postgres.
 
 ## Conclusion
 
@@ -323,9 +323,9 @@ Here's the aggregated test results table:
 | Index creation on filled database      | 1.563 s    | 1.916 s     |
 | Aggregated query                       | 174.51 ms  | 60.43 ms    |
 
-As you may see Mongo did beat Postgres in almost all the metrics. In worth noting that the tests were on semi-structured data which is the realm of mongo. But Postgres does offer it's own solution for the problem so comparing their performance in the weight category shouldn't be considered unfair. And I did saw quite a few similar tests where result were in favor of Postgres.
+As you may see Mongo did beat Postgres in almost all the metrics. It is worth noting that the tests were on semi-structured data which is the realm of Mongo. But Postgres does offer its own solution for the problem so comparing their performance in the weight category shouldn't be considered unfair. And I did see quite a few similar tests where the results were in favor of Postgres.
 
-**Note that the test may be significantly influenced by the way the databases are deployed and accessed** (EF Core may influence performance there). However, I would rather get a result that will probably reflect what I get in a real life then try to provide arbitrarily fine-tuned scenarios. 
+**Note that the test may be significantly influenced by the way the databases are deployed and accessed** (EF Core may influence performance there). However, I would rather get a result that will probably reflect what I get in real life than try to provide arbitrarily fine-tuned scenarios. 
 
 I ran those tests in the following environment:
 
@@ -336,4 +336,4 @@ Apple M1, 1 CPU, 8 logical and 8 physical cores
   [Host]            : .NET 8.0.1 (8.0.123.58001), Arm64 RyuJIT AdvSIMD
 ```
 
-To run your own test just check out: https://github.com/astorDev/seege. Know how to improve the tests? Feel free to raise an issue, leave a comment or create a pull request.
+To run your own test just check out: https://github.com/astorDev/seege. Know how to improve the tests? Feel free to raise an issue, leave a comment, or create a pull request.
