@@ -27,11 +27,9 @@ public static class TestData
     public static readonly string[] UserIds = RandomUserIds(20_000);
     static readonly string[] categories = [ "food", "transport", "fun", "home" ];
 
-    public static string RandomCategory() {
-        return categories[random.Next(0, categories.Length)];
-    }
+    public static string RandomCategory() 
+        => categories[random.Next(0, categories.Length)];
 
-    public static string[] RandomUserIds(int count) {
-        return Enumerable.Range(0, count).Select(i => random.Next(0, 1000).ToString()).ToArray();
-    }
+    public static string[] RandomUserIds(int count) 
+        => Enumerable.Range(0, count).Select(i => random.Next(0, 1000).ToString()).ToArray();
 }
