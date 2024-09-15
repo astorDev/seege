@@ -1,14 +1,14 @@
 # How C# Dictionary Actually Work
 
-`Dictionary<TKey, TValue>` is a very popular data structure in C# and a popular choice for interview questions. I've used `Dictionary` a billion times and I was pretty sure I understand how they work. However, when I dwelve even deeper into them and checked out they actual code I've figured out they work even better then I thought (and perhaps you, too). In this article, we'll make the deep dive together and even write our own educational replica of the dictionary. So join me and let's get going!
+`Dictionary<TKey, TValue>` is a very popular data structure in C# and a popular choice for interview questions. I've used `Dictionary` a billion times and I was pretty sure I understand how they work. However, when I delve even deeper into them and checked out the actual code I've figured out they work even better than I thought (and perhaps you, too). In this article, we'll make a deep dive together and even write our own educational replica of the dictionary. So join me and let's get going!
 
 > Or just straight to the [Finale](#wrapping-up) for a short summary of the findings of this article!
 
 ## Making the Replica
 
-To ensure our replica matches the actual code we'll start from exploring what we'll have in the original code and then just remove everything not essential and add logs (`Console.WriteLine`) wherever needed. It's enough to replicate just two primary methods: [Add](https://referencesource.microsoft.com/#mscorlib/system/collections/generic/dictionary.cs,a7861da7aaa500fe,references) and [GetValueOrDefault](https://referencesource.microsoft.com/#mscorlib/system/collections/generic/dictionary.cs,9680ab8ad8dfbf8d) to recreate all the essentials of the `Dictionary`, so this is what we are going to do. But first let's check out the fields data we have in a `Dictionary`:
+To ensure our replica matches the actual code we'll start by exploring what we'll have in the original code and then just remove everything not essential and add logs (`Console.WriteLine`) wherever needed. It's enough to replicate just two primary methods: [Add](https://referencesource.microsoft.com/#mscorlib/system/collections/generic/dictionary.cs,a7861da7aaa500fe,references) and [GetValueOrDefault](https://referencesource.microsoft.com/#mscorlib/system/collections/generic/dictionary.cs,9680ab8ad8dfbf8d) to recreate all the essentials of the `Dictionary`, so this is what we are going to do. But first, let's check out the fields we have in a `Dictionary`:
 
-> I'll use code from .NET Framework 4.8 from reference source. Although modern .NET code is slightly more complicated the essentials are still the same, so the Framework version should do.
+> I'll use code from .NET Framework 4.8 from the reference source. Although modern .NET code is slightly more complicated the essentials are still the same, so the Framework version should do.
 
 ```csharp
 private struct Entry {
@@ -27,7 +27,7 @@ private int freeCount;
 private IEqualityComparer<TKey> comparer;
 ```
 
-The `freeList` and `freeCount` properties are part of some optimization techniqu, that are not essential for the functioning of a `Dictionary` - we'll pass on them for our replica. `version` is just a changes counter, we'll pass on it, too. For simplicity we will also use `EqualityComparer<TKey>.Default` instead of allowing external provision. Adding methods for printing current state (values of all the properties), we'll get:
+The `freeList` and `freeCount` properties are part of an optimization technique, that is not essential for the functioning of a `Dictionary` - we'll pass on them for our replica. `version` is just a changes counter, we'll pass on it, too. For simplicity, we will also use `EqualityComparer<TKey>.Default` instead of allowing external provision. Adding methods for printing the current state (values of all the properties), we'll get:
 
 ```csharp
 public class EducationalDictionary<TKey, TValue>
@@ -74,7 +74,7 @@ public class EducationalDictionary<TKey, TValue>
 }
 ```
 
-`Add` method in the source code is essentially a call to another method:
+The `Add` method in the source code is essentially a call to another method:
 
 ```csharp
 public void Add(TKey key, TValue value) {
@@ -82,7 +82,7 @@ public void Add(TKey key, TValue value) {
 }
 ```
 
-The `Insert` method may look scary, but don't worry, we'll disect it bit by bit:
+The `Insert` method may look scary, but don't worry, we'll dissect it bit by bit:
 
 ```csharp
 private void Insert(TKey key, TValue value, bool add) {
@@ -162,7 +162,7 @@ private void Insert(TKey key, TValue value, bool add) {
 }
 ```
 
-It also calls to another methods:
+It also calls another methods:
 
 ```csharp
 private void Initialize(int capacity) {
@@ -200,7 +200,7 @@ private void Resize(int newSize, bool forceNewHashCodes) {
 }
 ```
 
-And finally they, call methods on `HashHelpers`. We'll replicate those, since they are very trivial if you don't handle edge-cases. Here's what our version will look like:
+And finally, they, call methods on `HashHelpers`. We'll replicate those since they are very trivial if you don't handle edge cases. Here's what our version will look like:
 
 ```csharp
 public static class HashHelpers
@@ -253,9 +253,9 @@ private void Resize(int newSize) {
 }
 ```
 
-We'll move initialization logic from `if (buckets == null) Initialize(0);` straight to constructor (since it will nullability handling much easier):
+We'll move initialization logic from `if (buckets == null) Initialize(0);` straight to the constructor (since it will nullability handling much easier):
 
-> Along with printing state after the initialization is done
+> Along with the printing state after the initialization is done
 
 ```csharp
 public EducationalDictionary()
@@ -269,7 +269,7 @@ public EducationalDictionary()
 }
 ```
 
-For the add here's the list of changes we'll perform:
+For the `Add` here's the list of changes we'll perform:
 
 - Remove arguments validation
 - Remove everything under `#FEATURE_RANDOMIZED_STRING_HASHING`
@@ -483,7 +483,7 @@ Key is equal returning 2
 🔎 Search. Key = 11. Initial Bucket Index 4
 
 Comparing key from entries[3] (11 - Alex + (next = -1)) to 11
-Key is equal returning 3
+The key is equal returning 3
 
 🔎 Search. Key = 50. Initial Bucket Index 1
 
@@ -501,8 +501,8 @@ With the code and logs above we can explain how a `Dictionary` searches for valu
 
 1. A `Dictionary` stores a set of `buckets` and `entries`.
 1. Index of a bucket - `i` - is calculated based on the hash code of the key.
-1. Value of the `bucket[i]` contains index of a record in `entries`
-1. The matching entry either matches the key or has another entry in the links chain that does (or the key doesn't exists in dictionary)
-1. To find the actual value `Dictionary` cycles by the links until it finds a matching key or stops in the dead-end (`0` or `-1` in `next`).
+1. The value of the `bucket[i]` contains the index of a record in `entries`
+1. The matching entry either matches the key or has another entry in the links chain that does (or the key doesn't exist in a dictionary)
+1. To find the actual value `Dictionary` cycles by the links until it finds a matching key or stops at the dead-end (`0` or `-1` in `next`).
 
-With the algorithm both search and insert operations are pretty fast and don't require much memory! To play around with the `EducationalDictionary` yourself checkout the source code [here](https://github.com/astorDev/seege/tree/main/dictionary/DictionaryPlayground). And by the way ... claps are appreciated 👏
+With the algorithm, both search and insert operations are pretty fast and don't require much memory! To play around with the `EducationalDictionary` yourself check out the source code [here](https://github.com/astorDev/seege/tree/main/dictionary/DictionaryPlayground). And by the way ... claps are appreciated 👏
