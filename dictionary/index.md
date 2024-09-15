@@ -1,45 +1,14 @@
 # How C# Dictionary Actually Work
 
-`Dictionary<TKey, TValue>` is a very popular data structure in C# and a popular choice for interview questions. I've used `Dictionary` a billion times and I was pretty sure I understand how they work. I knew they are very fast in finding a value by its key. However, in a recent interview, I gave a wrong answer when I was asked how exactly fast they are. In this article, I'll correct my mistake and investigate `Dictionary` in depth. Let's get into it!
+`Dictionary<TKey, TValue>` is a very popular data structure in C# and a popular choice for interview questions. I've used `Dictionary` a billion times and I was pretty sure I understand how they work. However, when I dwelve even deeper into them and checked out they actual code I've figured out they work even better then I thought (and perhaps you, too). In this article, we'll make the deep dive together and even write our own educational replica of the dictionary. So join me and let's get going!
 
-## What Did I Knew
+> Or just straight to the [Finale](#wrapping-up) for a short summary of the findings of this article!
 
-## Original snippets
+## Making the Replica
 
-[TryGetValue](https://referencesource.microsoft.com/#mscorlib/system/collections/generic/dictionary.cs,498):
+To ensure our replica matches the actual code we'll start from exploring what we'll have in the original code and then just remove everything not essential and add logs (`Console.WriteLine`) wherever needed. It's enough to replicate just two primary methods: [Add](https://referencesource.microsoft.com/#mscorlib/system/collections/generic/dictionary.cs,a7861da7aaa500fe,references) and [GetValueOrDefault](https://referencesource.microsoft.com/#mscorlib/system/collections/generic/dictionary.cs,9680ab8ad8dfbf8d) to recreate all the essentials of the `Dictionary`, so this is what we are going to do. But first let's check out the fields data we have in a `Dictionary`:
 
-```csharp
-public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
-{
-    int i = FindEntry(key);
-    if (i >= 0) {
-        value = entries[i].value;
-        return true;
-    }
-    value = default(TValue);
-    return false;
-}
-```
-
-[FindEntry](https://referencesource.microsoft.com/#mscorlib/system/collections/generic/dictionary.cs,bcd13bb775d408f1)
-
-```csharp
-private int FindEntry(TKey key) {
-    if( key == null) {
-        ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
-    }
- 
-    if (buckets != null) {
-        int hashCode = comparer.GetHashCode(key) & 0x7FFFFFFF;
-        for (int i = buckets[hashCode % buckets.Length]; i >= 0; i = entries[i].next) {
-            if (entries[i].hashCode == hashCode && comparer.Equals(entries[i].key, key)) return i;
-        }
-    }
-    return -1;
-}
-```
-
-where `& 0x7FFFFFFF` makes the hashcode positive, roughly like `Math.Abs`.
+> I'll use code from .NET Framework 4.8 from reference source. Although modern .NET code is slightly more complicated the essentials are still the same, so the Framework version should do.
 
 ```csharp
 private struct Entry {
@@ -57,6 +26,63 @@ private int freeList;
 private int freeCount;
 private IEqualityComparer<TKey> comparer;
 ```
+
+The `freeList` and `freeCount` properties are part of some optimization techniqu, that are not essential for the functioning of a `Dictionary` - we'll pass on them for our replica. `version` is just a changes counter, we'll pass on it, too. For simplicity we will also use `EqualityComparer<TKey>.Default` instead of allowing external provision. Adding methods for printing current state (values of all the properties), we'll get:
+
+```csharp
+public class EducationalDictionary<TKey, TValue>
+{
+    private struct Entry {
+        public int hashCode;
+        public int next;
+        public TKey key;
+        public TValue? value;
+
+        string ValueString => value == null ? "null" : value!.ToString()!;
+        public override string ToString()
+        {
+            return $"{key} - {ValueString} + (next = {next})";
+        }
+    }
+ 
+    private int[] buckets;
+    private Entry[] entries;
+    private int count;
+    private readonly EqualityComparer<TKey> comparer = EqualityComparer<TKey>.Default;
+
+    public void PrintFullState(string preface)
+    {
+        Console.WriteLine();
+        Console.Write(this.ToString(preface));
+    }
+
+    public string ToString(string preface)
+    {
+        StringBuilder result = new();
+        
+        result.AppendLine($"{preface}, state:");
+        result.AppendLine();
+        result.AppendLine($"buckets: [{String.Join(", ", buckets!)}]");
+        result.AppendLine($"entries:");
+        for (int i = 0; i < entries.Length; i++)
+        {
+            result.AppendLine($" [{i}] = {entries[i]}");
+        }
+        result.AppendLine($"count: {count}");
+        return result.ToString();
+    }
+}
+```
+
+`Add` method in the source code is essentially a call to another method:
+
+```csharp
+public void Add(TKey key, TValue value) {
+    Insert(key, value, true);
+}
+```
+
+The `Insert` method may look scary, but don't worry, we'll disect it bit by bit:
 
 ```csharp
 private void Insert(TKey key, TValue value, bool add) {
@@ -136,6 +162,8 @@ private void Insert(TKey key, TValue value, bool add) {
 }
 ```
 
+It also calls to another methods:
+
 ```csharp
 private void Initialize(int capacity) {
     int size = HashHelpers.GetPrime(capacity);
@@ -172,139 +200,9 @@ private void Resize(int newSize, bool forceNewHashCodes) {
 }
 ```
 
-## Educational Dictionary
+And finally they, call methods on `HashHelpers`. We'll replicate those, since they are very trivial if you don't handle edge-cases. Here's what our version will look like:
 
 ```csharp
-public class EducationalDictionary<TKey, TValue>
-{
-    private struct Entry {
-        public int hashCode;
-        public int next;
-        public TKey key;
-        public TValue? value;
-
-        string ValueString => value == null ? "null" : value!.ToString()!;
-        public override string ToString()
-        {
-            return $"{key} - {ValueString} + (next = {next})";
-        }
-    }
- 
-    private int[] buckets;
-    private Entry[] entries;
-    private int count;
-    private readonly EqualityComparer<TKey> comparer = EqualityComparer<TKey>.Default;
-
-    public EducationalDictionary()
-    {
-        var size = HashHelpers.GetPrime(0);
-        buckets = new int[size];
-        for (var i = 0; i < buckets.Length; i++) buckets[i] = -1;
-        entries = new Entry[size];
-        
-        PrintFullState("\ud83d\ude80 Initialized");
-    }
-    
-    public TValue? GetValueOrDefault(TKey key) {
-        var i = FindEntry(key);
-        return i >= 0 ? entries[i].value : default;
-    }
-    
-    public void Add(TKey key, TValue value) {
-        var hashCode = comparer.GetHashCode(key) & 0x7FFFFFFF;
-        var targetBucket = hashCode % buckets!.Length;
-        
-        if (count == entries!.Length)
-        {
-            Resize(HashHelpers.ExpandPrime(count));
-            targetBucket = hashCode % buckets.Length;
-        }
-        
-        var index = count;
-        count++;
-        
-        entries[index].hashCode = hashCode;
-        entries[index].next = buckets[targetBucket];
-        entries[index].key = key;
-        entries[index].value = value;
-        buckets[targetBucket] = index;
-        
-        Console.WriteLine();
-        PrintFullState($"\ud83d\udce5 Add: {key} - {value}. hashCode = {hashCode}, targetBucket = {targetBucket}");
-    }
-    
-    private void Resize(int newSize) {
-        var newBuckets = new int[newSize];
-        for (var i = 0; i < newBuckets.Length; i++) newBuckets[i] = -1;
-        var newEntries = new Entry[newSize];
-        Array.Copy(entries, 0, newEntries, 0, count);
-
-        for (var i = 0; i < count; i++) {
-            if (newEntries[i].hashCode >= 0) {
-                var bucket = newEntries[i].hashCode % newSize;
-                newEntries[i].next = newBuckets[bucket];
-                newBuckets[bucket] = i;
-            }
-        }
-
-        buckets = newBuckets;
-        entries = newEntries;
-        
-        PrintFullState("\u2194\ufe0f Resize");
-    }
-
-    private int FindEntry(TKey key)
-    {
-        var hashCode = comparer.GetHashCode(key!) & 0x7FFFFFFF;
-        var initialBucketIndex = hashCode % buckets.Length;
-        
-        Console.WriteLine();
-        Console.WriteLine($"\ud83d\udd0e Search. Key = {key}. Initial Bucket Index {initialBucketIndex}");
-        
-        for (var i = buckets[initialBucketIndex]; i >= 0; i = entries[i].next)
-        {
-            Console.WriteLine();
-            Console.WriteLine($"Comparing key from entries[{i}] ({entries[i]}) to {key}");
-            
-            if (entries[i].hashCode == hashCode && comparer.Equals(entries[i].key, key))
-            {
-                Console.WriteLine($"Key is equal returning {i}");
-                
-                return i;
-            }
-            else {
-                Console.WriteLine($"Key is not equal, moving to the next linked index ({entries[i].next})");
-            }
-        }
-        
-        Console.WriteLine();
-        Console.WriteLine("Search exit condition met (i >= 0). Returning -1 (as not found)");
-        return -1;
-    }
-
-    public void PrintFullState(string preface)
-    {
-        Console.WriteLine();
-        Console.Write(this.ToString(preface));
-    }
-
-    public string ToString(string preface)
-    {
-        StringBuilder result = new();
-        
-        result.AppendLine($"{preface}, state:");
-        result.AppendLine();
-        result.AppendLine($"buckets: [{String.Join(", ", buckets!)}]");
-        result.AppendLine($"entries:");
-        for (int i = 0; i < entries.Length; i++)
-        {
-            result.AppendLine($" [{i}] = {entries[i]}");
-        }
-        result.AppendLine($"count: {count}");
-        return result.ToString();
-    }
-}
-
 public static class HashHelpers
 {
     public static readonly int[] primes = {
@@ -331,7 +229,151 @@ public static class HashHelpers
 }
 ```
 
+For resize we'll remove the logic after `if (forceNewHashCodes)` and print state after the resizing is done. To be honest, the code is not very important it essentially rearranges `entries` and `buckets` for the new size. This is what our result looks like:
+
+```csharp
+private void Resize(int newSize) {
+    var newBuckets = new int[newSize];
+    for (var i = 0; i < newBuckets.Length; i++) newBuckets[i] = -1;
+    var newEntries = new Entry[newSize];
+    Array.Copy(entries, 0, newEntries, 0, count);
+
+    for (var i = 0; i < count; i++) {
+        if (newEntries[i].hashCode >= 0) {
+            var bucket = newEntries[i].hashCode % newSize;
+            newEntries[i].next = newBuckets[bucket];
+            newBuckets[bucket] = i;
+        }
+    }
+
+    buckets = newBuckets;
+    entries = newEntries;
+    
+    PrintFullState("\u2194\ufe0f Resize");
+}
+```
+
+We'll move initialization logic from `if (buckets == null) Initialize(0);` straight to constructor (since it will nullability handling much easier):
+
+> Along with printing state after the initialization is done
+
+```csharp
+public EducationalDictionary()
+{
+    var size = HashHelpers.GetPrime(0);
+    buckets = new int[size];
+    for (var i = 0; i < buckets.Length; i++) buckets[i] = -1;
+    entries = new Entry[size];
+    
+    PrintFullState("\ud83d\ude80 Initialized");
+}
+```
+
+For the add here's the list of changes we'll perform:
+
+- Remove arguments validation
+- Remove everything under `#FEATURE_RANDOMIZED_STRING_HASHING`
+- Remove logic under `if (freeCount > 0)` since we removed the parameter anyway
+- Remove the loop, checking for already set keys: `for (int i = buckets[targetBucket]; i >= 0; i = entries[i].next) {`
+- Print state after the addition
+
+```csharp
+public void Add(TKey key, TValue value) {
+    var hashCode = comparer.GetHashCode(key) & 0x7FFFFFFF;
+    var targetBucket = hashCode % buckets!.Length;
+    
+    if (count == entries!.Length)
+    {
+        Resize(HashHelpers.ExpandPrime(count));
+        targetBucket = hashCode % buckets.Length;
+    }
+    
+    var index = count;
+    count++;
+    
+    entries[index].hashCode = hashCode;
+    entries[index].next = buckets[targetBucket];
+    entries[index].key = key;
+    entries[index].value = value;
+    buckets[targetBucket] = index;
+    
+    Console.WriteLine();
+    PrintFullState($"\ud83d\udce5 Add: {key} - {value}. hashCode = {hashCode}, targetBucket = {targetBucket}");
+}
+```
+
+Looks way simpler now, right? Now let's finalize our class, implementing `GetValueOrDefault`.
+
+## Getting the value
+
+This time the implementation is rather simple even in the original code of `GetValueOrDefault`:
+
+```csharp
+internal TValue GetValueOrDefault(TKey key) {
+    int i = FindEntry(key);
+    if (i >= 0) {
+        return entries[i].value;
+    }
+    return default(TValue);
+}
+```
+
+And in the search itself (in the `FindEntry` method):
+
+```csharp
+private int FindEntry(TKey key) {
+    if( key == null) {
+        ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
+    }
+ 
+    if (buckets != null) {
+        int hashCode = comparer.GetHashCode(key) & 0x7FFFFFFF;
+        for (int i = buckets[hashCode % buckets.Length]; i >= 0; i = entries[i].next) {
+            if (entries[i].hashCode == hashCode && comparer.Equals(entries[i].key, key)) return i;
+        }
+    }
+    return -1;
+}
+```
+
+There's not much to clean up here. But we will add a lot of logs, since it's the essential
+
+```csharp
+private int FindEntry(TKey key)
+{
+    var hashCode = comparer.GetHashCode(key!) & 0x7FFFFFFF;
+    var initialBucketIndex = hashCode % buckets.Length;
+    
+    Console.WriteLine();
+    Console.WriteLine($"\ud83d\udd0e Search. Key = {key}. Initial Bucket Index {initialBucketIndex}");
+    
+    for (var i = buckets[initialBucketIndex]; i >= 0; i = entries[i].next)
+    {
+        Console.WriteLine();
+        Console.WriteLine($"Comparing key from entries[{i}] ({entries[i]}) to {key}");
+        
+        if (entries[i].hashCode == hashCode && comparer.Equals(entries[i].key, key))
+        {
+            Console.WriteLine($"Key is equal returning {i}");
+            
+            return i;
+        }
+        else {
+            Console.WriteLine($"Key is not equal, moving to the next linked index ({entries[i].next})");
+        }
+    }
+    
+    Console.WriteLine();
+    Console.WriteLine("Search exit condition met (i >= 0). Returning -1 (as not found)");
+    return -1;
+}
+```
+
+This finishes up our `EducationalDictionary`. Now let's use it and see the detailed logs we've prepared!
+
 ## Performing the tests
+
+We'll add 4 records, search for each of this record, plus one non-existing key, which should return `null`, indicating that it couldn't find it. Here's how the test might look like:
 
 ```csharp
 [TestMethod]
@@ -351,7 +393,9 @@ public void FindsMultipleKeys()
 }
 ```
 
-```csharp
+And this is the log we'll get from running the test:
+
+```yaml
 🚀 Initialized, state:
 
 buckets: [-1, -1, -1]
@@ -449,6 +493,16 @@ Key is not equal, moving to the next linked index (-1)
 Search exit condition met (i >= 0). Returning -1 (as not found)
 ```
 
-## Wrapping Up
+With code and logs in place let's put in words what we found out about for a `Dictionary` works.
 
-Before just recently I thought dictionaies use hash codes to form a sorted listed and find a key using binary search, so I assumed a logarithmic complexity of it. Turns out the hash code is actually just used to mathematically find a matching index of a values bucket, which means constant complexity of the algorithm. Although I felt slightly ashamed that I didn't know how such an important data structure works it was nevertheless pleasant to figure out it is even better then I assumed. And hey... claps are appreciated 👏
+## Wrapping Up!
+
+With the code and logs above we can explain how a `Dictionary` searches for values:
+
+1. A `Dictionary` stores a set of `buckets` and `entries`.
+1. Index of a bucket - `i` - is calculated based on the hash code of the key.
+1. Value of the `bucket[i]` contains index of a record in `entries`
+1. The matching entry either matches the key or has another entry in the links chain that does (or the key doesn't exists in dictionary)
+1. To find the actual value `Dictionary` cycles by the links until it finds a matching key or stops in the dead-end (`0` or `-1` in `next`).
+
+With the algorithm both search and insert operations are pretty fast and don't require much memory! To play around with the `EducationalDictionary` yourself checkout the source code [here](https://github.com/astorDev/seege/tree/main/dictionary/DictionaryPlayground). And by the way ... claps are appreciated 👏
