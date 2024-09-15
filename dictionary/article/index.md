@@ -4,6 +4,8 @@
 
 > Or just straight to the [Finale](#wrapping-up) for a short summary of the findings of this article!
 
+![](thumb.png)
+
 ## Making the Replica
 
 To ensure our replica matches the actual code we'll start by exploring what we'll have in the original code and then just remove everything not essential and add logs (`Console.WriteLine`) wherever needed. It's enough to replicate just two primary methods: [Add](https://referencesource.microsoft.com/#mscorlib/system/collections/generic/dictionary.cs,a7861da7aaa500fe,references) and [GetValueOrDefault](https://referencesource.microsoft.com/#mscorlib/system/collections/generic/dictionary.cs,9680ab8ad8dfbf8d) to recreate all the essentials of the `Dictionary`, so this is what we are going to do. But first, let's check out the fields we have in a `Dictionary`:
@@ -505,4 +507,4 @@ With the code and logs above we can explain how a `Dictionary` searches for valu
 1. The matching entry either matches the key or has another entry in the links chain that does (or the key doesn't exist in a dictionary)
 1. To find the actual value `Dictionary` cycles by the links until it finds a matching key or stops at the dead-end (`0` or `-1` in `next`).
 
-With the algorithm, both search and insert operations are pretty fast and don't require much memory! To play around with the `EducationalDictionary` yourself check out the source code [here](https://github.com/astorDev/seege/tree/main/dictionary/DictionaryPlayground). And by the way ... claps are appreciated 👏
+With the algorithm, both search and insert operations are pretty fast and don't require much memory! To play around with the `EducationalDictionary` yourself check out the source code [here](https://github.com/astorDev/seege/tree/main/dictionary/playground). And by the way ... claps are appreciated 👏
