@@ -1,6 +1,6 @@
 # How C# Dictionary Actually Work
 
-`Dictionary<TKey, TValue>` is a very popular data structure in C# and a popular choice for interview questions. I've used `Dictionary` a billion times and I was pretty sure I understand how they work. However, when I delve even deeper into them and checked out the actual code I've figured out they work even better than I thought (and perhaps you, too). In this article, we'll make a deep dive together and even write our own educational replica of the dictionary. So join me and let's get going!
+`Dictionary<TKey, TValue>` is a very popular data structure in C# and a popular choice for interview questions. I've used `Dictionary` a billion times and I was pretty sure I understand how they work. However, when I delve even deeper into them and check out the actual code I've figured out they work even better than I thought (and perhaps you, too). In this article, we'll make a deep dive together and even write our own educational replica of the dictionary. So join me and let's get going!
 
 > Or just straight to the [Finale](#wrapping-up) for a short summary of the findings of this article!
 
@@ -164,7 +164,7 @@ private void Insert(TKey key, TValue value, bool add) {
 }
 ```
 
-It also calls another methods:
+It also calls other methods:
 
 ```csharp
 private void Initialize(int capacity) {
@@ -338,7 +338,7 @@ private int FindEntry(TKey key) {
 }
 ```
 
-There's not much to clean up here. But we will add a lot of logs, since it's the essential
+There's not much to clean up here. But we will add a lot of logs since it's the most essential logic we have
 
 ```csharp
 private int FindEntry(TKey key)
