@@ -1,6 +1,6 @@
 # How C# Dictionary Actually Work
 
-`Dictionary<TKey, TValue>` is a very popular data structure in C# and a popular choice for interview questions. I've used `Dictionary` a billion times and I was pretty sure I understand how they work. I knew they are very fast in finding a value by it's key. However, on a recent interview, when I was asked how exactly fast they are  I gave a wrong answer. In this article, I'll correct my mistake and investigate `Dictionary` in depth. Let's get into it!
+`Dictionary<TKey, TValue>` is a very popular data structure in C# and a popular choice for interview questions. I've used `Dictionary` a billion times and I was pretty sure I understand how they work. I knew they are very fast in finding a value by its key. However, in a recent interview, I gave a wrong answer when I was asked how exactly fast they are. In this article, I'll correct my mistake and investigate `Dictionary` in depth. Let's get into it!
 
 ## What Did I Knew
 
