@@ -5,6 +5,7 @@
 
 castle/seege/reports/
 inbox.*
+.DS_Store
 
 # User-specific files
 *.rsuser
