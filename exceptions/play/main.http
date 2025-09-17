@@ -1,0 +1,14 @@
+POST /exceptional-vegetables
+
+{
+    "name" : "Potato",
+    "isHot" : true
+}
+
+###
+POST /resulted-vegetables
+
+{
+    "name" : "Potato",
+    "isHot" : true
+}

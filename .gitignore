@@ -4,6 +4,7 @@
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
 castle/seege/reports/
+inbox.*
 
 # User-specific files
 *.rsuser
